@@ -24,6 +24,7 @@ function _ngxcTypeOptions() {
                 'calibre-web' => 'Calibre-Web',
                 'calibre-webBlur' => 'Calibre-Web (Blur Theme)',
                 'deluge' => 'Deluge',
+		'other' => 'Other',
                 'guacamole' => 'Guacamole',
                 'jackett' => 'Jackett',
                 'lazylibrarian' => 'LazyLibrarian',
@@ -119,6 +120,9 @@ function _ngxcWriteTabConfig($tab) {
                         break;
                 case "guacamole":
                         return _ngxcWriteTabGuacamoleConfig($url, $path, $nameLower, $tab["group_id"]);
+                        break;
+		case "other":
+			return _ngxcWriteTabOtherConfig($url, $path, $nameLower, $tab["group_id"]);
                         break;
                 case "jackett":
                         return _ngxcWriteTabJackettConfig($url, $path, $nameLower, $tab["group_id"]);
@@ -311,6 +315,8 @@ function _ngxcWriteTabJackettConfig($url, $path, $name, $group) {
               return $result;
       }
 
+
+
 function _ngxcWriteTabMylarConfig($url, $path, $name, $group) {
         $data = "
         location $path {
@@ -363,6 +369,27 @@ function _ngxcWriteTabNowshowingConfig($url, $path, $name, $group) {
         $result = (file_put_contents($GLOBALS['NGXC_SAVE_PATH'].'/proxy'.'/'.$name.'.conf', $data) !== false);
         return $result;
 }
+
+function _ngxcWriteTabOtherConfig($url, $path, $name, $group) {
+        $data = "
+        location $path {
+                auth_request /auth-$group;
+                proxy_pass $url/;
+                proxy_set_header Host \$host;
+                proxy_set_header X-Real-IP \$remote_addr;
+                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto https;
+                proxy_redirect  http://  \$scheme://;
+                proxy_http_version 1.1;
+                proxy_set_header Connection \"\";
+                proxy_cache_bypass \$cookie_session;
+                proxy_no_cache \$cookie_session;
+                proxy_buffers 32 4k;
+              }";
+
+              $result = (file_put_contents($GLOBALS['NGXC_SAVE_PATH'].'/proxy'.'/'.$name.'.conf', $data) !== false);
+              return $result;
+      }
 
 function _ngxcWriteTabNzbGetConfig($url, $path, $name, $group, $theme = false) {
         $data = "
